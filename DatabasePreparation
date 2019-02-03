@@ -1,0 +1,43 @@
+library(readxl)
+PopulationEmploymentDatabase<- read_excel("/Volumes/124GB USB/Job Applications/data incubator_project/DatabaseProject.xlsx", 
+                                                       sheet = "1-Population and Employment")
+View(PopulationEmploymentDatabase)
+dim(PopulationEmploymentDatabase)
+PopulationEmploymentDataset<-as.data.frame(PopulationEmploymentDatabase)
+
+#For Parsing
+NamesCongregateEU<-unique(PopulationEmploymentDataset$COUNTRY)[1:7]
+NamesEuropeanContinent<-unique(PopulationEmploymentDataset$COUNTRY)[8:44]
+
+NamesEuroCountries1<-unique(PopulationEmploymentDataset$COUNTRY)[ 8:12 ]
+NamesEuroCountries2<-unique(PopulationEmploymentDataset$COUNTRY)[ 14:35 ]
+NamesEuroCountries<-c(NamesEuroCountries1,NamesEuroCountries2)
+length(NamesEuroCountries)
+
+NamesNoEuroCountries<-unique(PopulationEmploymentDataset$COUNTRY)[ 36:44]
+
+NamesWorld<-unique(PopulationEmploymentDataset$COUNTRY)[45:51]
+
+NewDataset<-PopulationEmploymentDataset[ -c(1) ]
+#NewDataset[NewDataset$COUNTRY=="West Germany", ] <- NA
+
+library(reshape2)
+NewDatasetlong <- melt(NewDataset, id.vars = c("COUNTRY","SUB-CHAPTER" ,"TITLE", "UNIT"), variable.name = "year")
+NewDatasetlong$value<-as.numeric(NewDatasetlong$value)
+class(NewDatasetlong$value)
+#NewDatasetlong$value2<-NewDatasetlong$value
+#NewDatasetlong$value2[NewDatasetlong$UNIT== "1000 persons"]<-NewDatasetlong$value*1000
+
+
+
+#LabourForcePopulation Over Total Population in EUro Area from 1960 to 2019
+EuroareaDataset<-subset(NewDatasetlong, NewDatasetlong$COUNTRY=="Euro area")
+DatasetLabourForce<-subset(EuroareaDataset, EuroareaDataset$TITLE=="Total labour force (Labour force statistics)")
+
+Euro27Dataset<-subset(NewDatasetlong, NewDatasetlong$COUNTRY %in% NamesEuroCountries)
+DatasetLabourForce<-subset(Euro27Dataset, Euro27Dataset$TITLE=="Total labour force (Labour force statistics)")
+DatasetForPlot<-DatasetLabourForce
+
+#Civilian employment, persons,  from 1960 to 2019
+DatasetEmployment<-subset(Euro27Dataset, Euro27Dataset$TITLE=="Civilian employment, persons (national)")
+DatasetForPlot<-DatasetEmployment
